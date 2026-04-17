@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="16dp">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp"
+        android:text="זכר לחורבן"
+        android:textColor="#D4A84B"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium" />
+
+    <!-- Day Count - Main Number -->
+    <TextView
+        android:id="@+id/tv_day_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_title"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="4dp"
+        android:text="714,340"
+        android:textColor="#FFFFFF"
+        android:textSize="36sp"
+        android:fontFamily="sans-serif-bold" />
+
+    <!-- "Days" label -->
+    <TextView
+        android:id="@+id/tv_days_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_day_count"
+        android:layout_centerHorizontal="true"
+        android:text="ימים"
+        android:textColor="#D4A84B"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif"
+        android:letterSpacing="0.15" />
+
+    <!-- Hebrew Date -->
+    <TextView
+        android:id="@+id/tv_hebrew_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:textColor="#FFFFFF99"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif" />
+
+</RelativeLayout>

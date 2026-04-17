@@ -1,0 +1,5 @@
+name: api_check
+environment:
+  sdk: ^3.5.0
+dependencies:
+  kosher_dart: ^2.0.8

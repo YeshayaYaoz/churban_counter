@@ -1,0 +1,34 @@
+name: churban_counter
+description: "זכר לחורבן - Days since the destruction of the Beit HaMikdash"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  home_widget: ^0.7.0
+
+  shared_preferences: ^2.2.2
+  google_fonts: ^6.1.0
+
+  kosher_dart: ^2.0.17
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/AppIcon_1024x1024.png"
+  flutter_test:
+    sdk: flutter
+  lints: ^5.1.1
+
+flutter:
+  uses-material-design: true
