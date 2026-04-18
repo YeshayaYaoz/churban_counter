@@ -4,7 +4,7 @@ import SwiftUI
 // MARK: - Timeline Provider
 
 struct ChurbanProvider: TimelineProvider {
-    let sharedDefaults = UserDefaults(suiteName: "group.com.arielapps.churbanCounter")
+    let sharedDefaults = UserDefaults(suiteName: "group.com.arielapps.churbanCounter.ChurbanWidge")
 
     func placeholder(in context: Context) -> ChurbanEntry {
         ChurbanEntry(
