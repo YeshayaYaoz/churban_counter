@@ -250,17 +250,6 @@ end
 runner_target.add_dependency(widget_target) if runner_target
 puts "✅ Added dependency Runner → #{WIDGET_NAME}"
 
-# Remove ALL existing embed app extension phases to avoid duplicates
-runner_target.copy_files_build_phases.select { |p| p.dst_subfolder_spec == '13' }.each do |phase|
-  phase.remove_from_project
-end
-
-# Create a single clean embed phase
-embed_phase = runner_target.new_copy_files_build_phase('Embed App Extensions')
-embed_phase.dst_subfolder_spec = '13'
-embed_phase.add_file_reference(widget_target.product_reference)
-puts "✅ Added embed phase for widget"
-
 project.save
 puts "✅ Saved project"
 puts "\n🎉 Widget Extension '#{WIDGET_NAME}' added successfully!"
