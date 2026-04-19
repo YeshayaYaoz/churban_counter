@@ -197,12 +197,11 @@ widget_target.build_configurations.each do |config|
 end
 puts "✅ Created target '#{WIDGET_NAME}'"
 
-widget_group = project.main_group.new_group(WIDGET_NAME, widget_dir)
-swift_ref = widget_group.new_file("#{widget_dir}/ChurbanWidget.swift")
+widget_group = project.main_group.new_group(WIDGET_NAME, WIDGET_NAME)swift_ref = widget_group.new_file("ChurbanWidget.swift")
 widget_target.add_file_references([swift_ref])
 puts "✅ Added Swift file to target"
 
-widget_group.new_file("#{widget_dir}/Info.plist")
+widget_group.new_file("Info.plist")
 
 entitlements_content = <<~ENTITLEMENTS
 <?xml version="1.0" encoding="UTF-8"?>
@@ -218,7 +217,7 @@ entitlements_content = <<~ENTITLEMENTS
 ENTITLEMENTS
 
 File.write("#{widget_dir}/#{WIDGET_NAME}.entitlements", entitlements_content)
-widget_group.new_file("#{widget_dir}/#{WIDGET_NAME}.entitlements")
+widget_group.new_file("#{WIDGET_NAME}.entitlements")
 puts "✅ Created widget entitlements"
 
 runner_entitlements_path = 'ios/Runner/Runner.entitlements'
