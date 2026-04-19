@@ -1,8 +1,4 @@
 #!/usr/bin/env ruby
-# add_widget_extension.rb
-# Run this as a Codemagic pre-build script to add the Widget Extension target.
-# The xcodeproj gem is pre-installed on Codemagic build machines.
-
 require 'xcodeproj'
 require 'fileutils'
 
@@ -13,13 +9,12 @@ WIDGET_BUNDLE_ID = 'com.arielapps.churbanCounter.ChurbanWidget'
 MAIN_BUNDLE_ID = 'com.arielapps.churbanCounter'
 APP_GROUP = 'group.com.arielapps.churbanCounter.ChurbanWidge'
 DEPLOYMENT_TARGET = '17.0'
-TEAM_ID = ENV['CM_TEAM_ID'] || '' # Set in Codemagic environment variables
+TEAM_ID = '95PWP7NY36'
 
 # === Create widget extension directory and files ===
 widget_dir = "ios/#{WIDGET_NAME}"
 FileUtils.mkdir_p(widget_dir)
 
-# Write the Swift widget code
 swift_code = <<~SWIFT
 import WidgetKit
 import SwiftUI
@@ -138,7 +133,6 @@ SWIFT
 File.write("#{widget_dir}/ChurbanWidget.swift", swift_code)
 puts "✅ Created #{widget_dir}/ChurbanWidget.swift"
 
-# Write Info.plist for widget extension
 info_plist = <<~PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -178,23 +172,19 @@ puts "✅ Created #{widget_dir}/Info.plist"
 project = Xcodeproj::Project.open(PROJECT_PATH)
 puts "✅ Opened #{PROJECT_PATH}"
 
-# Check if target already exists
 if project.targets.any? { |t| t.name == WIDGET_NAME }
   puts "⚠️ Target '#{WIDGET_NAME}' already exists, skipping"
   exit 0
 end
 
-# Create the widget extension target
 widget_target = project.new_target(:app_extension, WIDGET_NAME, :ios, DEPLOYMENT_TARGET)
 widget_target.build_configurations.each do |config|
   config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = WIDGET_BUNDLE_ID
   config.build_settings['SWIFT_VERSION'] = '5.0'
   config.build_settings['INFOPLIST_FILE'] = "#{WIDGET_NAME}/Info.plist"
   config.build_settings['CODE_SIGN_ENTITLEMENTS'] = "#{WIDGET_NAME}/#{WIDGET_NAME}.entitlements"
-  config.build_settings['DEVELOPMENT_TEAM'] = TEAM_ID unless TEAM_ID.empty?
+  config.build_settings['DEVELOPMENT_TEAM'] = TEAM_ID
   config.build_settings['TARGETED_DEVICE_FAMILY'] = '1,2'
-  config.build_settings['ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME'] = 'AccentColor'
-  config.build_settings['ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME'] = 'WidgetBackground'
   config.build_settings['GENERATE_INFOPLIST_FILE'] = 'NO'
   config.build_settings['CURRENT_PROJECT_VERSION'] = '1'
   config.build_settings['MARKETING_VERSION'] = '1.0'
@@ -206,16 +196,13 @@ widget_target.build_configurations.each do |config|
 end
 puts "✅ Created target '#{WIDGET_NAME}'"
 
-# Add Swift source file to the target
 widget_group = project.main_group.new_group(WIDGET_NAME, widget_dir)
 swift_ref = widget_group.new_file("#{widget_dir}/ChurbanWidget.swift")
 widget_target.add_file_references([swift_ref])
 puts "✅ Added Swift file to target"
 
-# Add Info.plist reference
 widget_group.new_file("#{widget_dir}/Info.plist")
 
-# Create entitlements file with App Group
 entitlements_content = <<~ENTITLEMENTS
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -231,9 +218,8 @@ ENTITLEMENTS
 
 File.write("#{widget_dir}/#{WIDGET_NAME}.entitlements", entitlements_content)
 widget_group.new_file("#{widget_dir}/#{WIDGET_NAME}.entitlements")
-puts "✅ Created entitlements"
+puts "✅ Created widget entitlements"
 
-# Also add App Group entitlement to the main Runner target
 runner_entitlements_path = 'ios/Runner/Runner.entitlements'
 unless File.exist?(runner_entitlements_path)
   runner_ent = <<~RENT
@@ -252,26 +238,28 @@ RENT
   puts "✅ Created Runner entitlements"
 end
 
-# Set entitlements on Runner target
 runner_target = project.targets.find { |t| t.name == 'Runner' }
 if runner_target
   runner_target.build_configurations.each do |config|
     config.build_settings['CODE_SIGN_ENTITLEMENTS'] = 'Runner/Runner.entitlements'
+    config.build_settings['DEVELOPMENT_TEAM'] = TEAM_ID
   end
-  puts "✅ Updated Runner signing entitlements"
+  puts "✅ Updated Runner signing"
 end
 
-# Add widget extension as dependency of the main app
 runner_target.add_dependency(widget_target) if runner_target
 puts "✅ Added dependency Runner → #{WIDGET_NAME}"
 
-# Embed the widget extension in the app
-embed_phase = runner_target.new_copy_files_build_phase('Embed App Extensions')
-embed_phase.dst_subfolder_spec = '13' # PlugIns folder
-embed_phase.add_file_reference(widget_target.product_reference)
-puts "✅ Added embed phase for widget"
+existing_embed = runner_target.copy_files_build_phases.find { |p| p.name == 'Embed App Extensions' }
+unless existing_embed
+  embed_phase = runner_target.new_copy_files_build_phase('Embed App Extensions')
+  embed_phase.dst_subfolder_spec = '13'
+  embed_phase.add_file_reference(widget_target.product_reference)
+  puts "✅ Added embed phase for widget"
+else
+  puts "⚠️ Embed phase already exists, skipping"
+end
 
-# Save
 project.save
 puts "✅ Saved project"
 puts "\n🎉 Widget Extension '#{WIDGET_NAME}' added successfully!"
