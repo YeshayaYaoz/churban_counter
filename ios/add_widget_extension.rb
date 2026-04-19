@@ -179,6 +179,7 @@ end
 
 widget_target = project.new_target(:app_extension, WIDGET_NAME, :ios, DEPLOYMENT_TARGET)
 widget_target.build_configurations.each do |config|
+    config.build_settings['PRODUCT_NAME'] = WIDGET_NAME
   config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = WIDGET_BUNDLE_ID
   config.build_settings['SWIFT_VERSION'] = '5.0'
   config.build_settings['INFOPLIST_FILE'] = "#{WIDGET_NAME}/Info.plist"
