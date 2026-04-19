@@ -247,9 +247,6 @@ if runner_target
   puts "✅ Updated Runner signing"
 end
 
-runner_target.add_dependency(widget_target) if runner_target
-puts "✅ Added dependency Runner → #{WIDGET_NAME}"
-
 project.save
 puts "✅ Saved project"
 puts "\n🎉 Widget Extension '#{WIDGET_NAME}' added successfully!"
