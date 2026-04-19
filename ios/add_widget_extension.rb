@@ -197,7 +197,8 @@ widget_target.build_configurations.each do |config|
 end
 puts "✅ Created target '#{WIDGET_NAME}'"
 
-widget_group = project.main_group.new_group(WIDGET_NAME, WIDGET_NAME)swift_ref = widget_group.new_file("ChurbanWidget.swift")
+widget_group = project.main_group.new_group(WIDGET_NAME, WIDGET_NAME)
+swift_ref = widget_group.new_file("ChurbanWidget.swift")
 widget_target.add_file_references([swift_ref])
 puts "✅ Added Swift file to target"
 
