@@ -246,6 +246,11 @@ if runner_target
   end
   puts "✅ Updated Runner signing"
 end
+# Embed widget in app bundle
+embed_phase = runner_target.new_copy_files_build_phase('Embed Foundation Extensions')
+embed_phase.dst_subfolder_spec = '13'
+embed_phase.add_file_reference(widget_target.product_reference)
+puts "✅ Added embed phase for widget"
 
 project.save
 puts "✅ Saved project"

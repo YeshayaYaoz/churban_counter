@@ -1,7 +1,7 @@
 name: churban_counter
 description: "זכר לחורבן - Days since the destruction of the Beit HaMikdash"
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ^3.5.0
