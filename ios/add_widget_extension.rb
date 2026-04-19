@@ -5,7 +5,7 @@ require 'fileutils'
 # === CONFIG ===
 PROJECT_PATH = 'ios/Runner.xcodeproj'
 WIDGET_NAME = 'ChurbanWidget'
-WIDGET_BUNDLE_ID = 'com.arielapps.churbanCounter.ChurbanWidge'
+WIDGET_BUNDLE_ID = 'com.arielapps.churbanCounter.ChurbanWidget'
 MAIN_BUNDLE_ID = 'com.arielapps.churbanCounter'
 APP_GROUP = 'group.com.arielapps.churbanCounter.ChurbanWidge'
 DEPLOYMENT_TARGET = '17.0'
