@@ -78,7 +78,6 @@
 		C1A000000000000000000001 /* ChurbanWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChurbanWidget.swift; sourceTree = "<group>"; };
 		C1A000000000000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C1A000000000000000000003 /* ChurbanWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChurbanWidget.entitlements; sourceTree = "<group>"; };
-		C1A000000000000000000004 /* ChurbanWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ChurbanWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1A000000000000000000005 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -135,7 +134,6 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
-				C1A000000000000000000004 /* ChurbanWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -201,7 +199,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				C8A000000000000000000001 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
