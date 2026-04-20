@@ -110,4 +110,3 @@ struct ChurbanWidget: Widget {
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
-@main
