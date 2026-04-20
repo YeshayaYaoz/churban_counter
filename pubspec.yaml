@@ -1,7 +1,7 @@
 name: churban_counter
 description: "זכר לחורבן - Days since the destruction of the Beit HaMikdash"
 publish_to: 'none'
-version: 1.0.0+7
+version: 1.0.0+8
 
 environment:
   sdk: ^3.5.0
@@ -11,10 +11,10 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  home_widget: ^0.7.0
+  home_widget: ^0.9.1
 
   shared_preferences: ^2.2.2
-  google_fonts: ^6.1.0
+  google_fonts: ^8.0.2
 
   kosher_dart: ^2.0.17
 dev_dependencies:
