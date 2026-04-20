@@ -10,8 +10,8 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.arielapps.churbanCounter
         provisioning_profiles:
-          - bundle_identifier: com.arielapps.churbanCounter
-          - bundle_identifier: com.arielapps.churbanCounter.ChurbanWidget
+          - "bundle_identifier: com.arielapps.churbanCounter"
+          - "bundle_identifier: com.arielapps.churbanCounter.ChurbanWidget"
     scripts:
       - name: Get packages
         script: flutter pub get
