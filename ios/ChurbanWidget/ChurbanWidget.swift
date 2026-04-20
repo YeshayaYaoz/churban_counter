@@ -97,10 +97,10 @@ struct ChurbanWidgetEntryView: View {
         }
     }
 }
-
 @main
-struct ChurbanWidgetBundle: Widget {
+struct ChurbanWidget: Widget {
     let kind: String = "ChurbanWidget"
+
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ChurbanProvider()) { entry in
             ChurbanWidgetEntryView(entry: entry)
@@ -110,3 +110,4 @@ struct ChurbanWidgetBundle: Widget {
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
+@main
