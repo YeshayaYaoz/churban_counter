@@ -23,7 +23,7 @@ struct ChurbanProvider: TimelineProvider {
         let totalDays = sharedDefaults?.string(forKey: "total_days") ?? "---"
         let hebrewDate = sharedDefaults?.string(forKey: "hebrew_date") ?? ""
         let nextTzet = sharedDefaults?.string(forKey: "next_tzet_display") ?? ""
-        let isTishaBav = sharedDefaults?.string(forKey: "is_tisha_bav") == "true" ?? false
+        let isTishaBAv = sharedDefaults?.string(forKey: "is_tisha_bav") == "true"
         return ChurbanEntry(date: Date(), totalDays: totalDays, hebrewDate: hebrewDate, nextTzet: nextTzet, isTishaBAv: isTishaBAv)
     }
 
