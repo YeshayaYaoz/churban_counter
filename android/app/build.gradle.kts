@@ -1,13 +1,12 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-    id("dev.flutter.flutter-gradle-plugin")
+    id("org.jetbrains.kotlin.android")
+    id("dev.flutter.flutter-gradle-plugin") // This makes the 'flutter' variable exist
 }
 
 android {
     namespace = "com.example.churban_counter"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 34
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -20,14 +19,11 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.arielapps.churbanCounter"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        applicationId = "com.arielapps.churban_counter"
         minSdk = 21
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        targetSdk = 34  // Hardcode this to 34 or 35
+        versionCode = 1
+        versionName = "1.0"
     }
 
     buildTypes {
@@ -39,6 +35,3 @@ android {
     }
 }
 
-flutter {
-    source = "../.."
-}
