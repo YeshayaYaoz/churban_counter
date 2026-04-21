@@ -104,7 +104,7 @@ android {
 #### b. Configure App Groups
 
 1. In Xcode, select the **Runner** target → Signing & Capabilities → + App Groups
-2. Add group: `group.com.arielapps.churbanCounter`
+2. Add group: `group.com.arielapps.churbanCounter.ChurbanWidge`
 3. Do the same for the **ChurbanWidget** target
 
 ### 5. Run

@@ -11,7 +11,7 @@ import 'zmanim_service.dart';
 /// - iOS: WidgetKit Timeline refreshes at tzet hakochavim
 /// - Both: widget data updated every time the app is opened
 class WidgetService {
-  static const String appGroupId = 'group.com.arielapps.churbanCounter';
+  static const String appGroupId = 'group.com.arielapps.churbanCounter.ChurbanWidge';
   static const String androidWidgetName = 'ChurbanWidgetProvider';
   static const String iOSWidgetName = 'ChurbanWidget';
 
