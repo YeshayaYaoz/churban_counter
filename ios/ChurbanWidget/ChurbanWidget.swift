@@ -2,7 +2,7 @@ import WidgetKit
 import SwiftUI
 
 struct ChurbanProvider: TimelineProvider {
-    let sharedDefaults = UserDefaults(suiteName: "group.com.arielapps.churbanCounter.ChurbanWidge.ChurbanWidge")
+    let sharedDefaults = UserDefaults(suiteName: "group.com.arielapps.churbanCounter.ChurbanWidge")
 
     func placeholder(in context: Context) -> ChurbanEntry {
         ChurbanEntry(date: Date(), totalDays: "714,340", hebrewDate: "", nextTzet: "", isTishaBAv: false)
