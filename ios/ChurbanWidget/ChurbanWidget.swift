@@ -65,41 +65,70 @@ struct ChurbanWidgetEntryView: View {
     }
 
     var body: some View {
-        ZStack {
-            LinearGradient(colors: [Color(red: 0.11, green: 0.23, blue: 0.29), Color(red: 0.04, green: 0.04, blue: 0.04)], startPoint: .top, endPoint: .bottom)
-            VStack(spacing: 4) {
-                Text(entry.isTishaBAv ? "ט׳ באב" : "זכר לחורבן")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(accentColor)
+
+    switch widgetFamily {
+        case .accessoryCircular:
+            // עיצוב עגול
+            Text(entry.totalDays)
+                .font(.system(size: 20, weight: .bold))
+        case .accessoryRectangular:
+            // עיצוב מלבני
+            VStack(alignment: .leading) {
+                Text("זכר לחורבן")
                 Text(entry.totalDays)
-                    .font(.system(size: widgetFamily == .systemSmall ? 28 : 36, weight: .bold))
-                    .foregroundColor(.white)
-                    .minimumScaleFactor(0.5)
-                Text("ימים")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(accentColor.opacity(0.8))
-                    .tracking(2)
-                if widgetFamily != .systemSmall {
-                    Spacer()
-                    HStack(spacing: 12) {
-                        Text(entry.hebrewDate)
-                            .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.5))
-                        if !entry.nextTzet.isEmpty {
-                            HStack(spacing: 3) {
-                                Image(systemName: "moon.stars.fill").font(.system(size: 9))
-                                Text(entry.nextTzet).font(.system(size: 10))
-                            }.foregroundColor(accentColor.opacity(0.5))
-                        }
-                    }
-                }
-            }.padding()
-        }
-    }
+            }
+        case .accessoryInline:
+            // שורה אחת
+            Text("זכר לחורבן: \(entry.totalDays) ימים")
+            default: var body: some View {
+                         ZStack {
+                             LinearGradient(
+                                 colors: [Color(red: 0.11, green: 0.23, blue: 0.29), Color(red: 0.04, green: 0.04, blue: 0.04)],
+                                 startPoint: .top,
+                                 endPoint: .bottom
+                             )
+
+                             VStack(spacing: 4) {
+                                 Text(entry.isTishaBAv ? "ט׳ באב" : "זכר לחורבן")
+                                     .font(.system(size: 13, weight: .medium))
+                                     .foregroundColor(accentColor)
+
+                                 Text(entry.totalDays)
+                                     .font(.system(size: widgetFamily == .systemSmall ? 28 : 36, weight: .bold))
+                                     .foregroundColor(.white)
+                                     .minimumScaleFactor(0.5)
+
+                                 Text("ימים")
+                                     .font(.system(size: 11, weight: .medium))
+                                     .foregroundColor(accentColor.opacity(0.8))
+                                     .tracking(2)
+
+                                 if widgetFamily != .systemSmall {
+                                     Spacer()
+                                     HStack(spacing: 12) {
+                                         Text(entry.hebrewDate)
+                                             .font(.system(size: 11))
+                                             .foregroundColor(.white.opacity(0.5))
+
+                                         if !entry.nextTzet.isEmpty {
+                                             HStack(spacing: 3) {
+                                                 Image(systemName: "moon.stars.fill").font(.system(size: 9))
+                                                 Text(entry.nextTzet).font(.system(size: 10))
+                                             }.foregroundColor(accentColor.opacity(0.5))
+                                         }
+                                     }
+                                     .padding(.bottom, 8)
+                                 }
+                             }
+                             .padding(.horizontal, 12)
+                             .padding(.top, 12)
+                         }
+                     }
 }
 @main
 struct ChurbanWidget: Widget {
     let kind: String = "ChurbanWidget"
+
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ChurbanProvider()) { entry in
@@ -107,6 +136,11 @@ struct ChurbanWidget: Widget {
         }
         .configurationDisplayName("זכר לחורבן")
         .description("מונה ימים מאז חורבן בית המקדש")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([
+        .systemSmall,
+        .systemMedium,
+        .accessoryCircular,      // Lock Screen עגול
+        .accessoryRectangular,   // Lock Screen מלבני
+        .accessoryInline ]) // Lock Screen שורה
     }
 }
