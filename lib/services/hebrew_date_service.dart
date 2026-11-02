@@ -1,18 +1,30 @@
+import 'dart:convert';
+
 import 'package:kosher_dart/kosher_dart.dart';
 
 /// Service for calculating days since the destruction of the Beit HaMikdash.
 ///
-/// The Second Temple was destroyed on Tisha B'Av (9 Av) 3828 in the Hebrew
-/// calendar, corresponding to approximately August 4, 70 CE.
+/// The Second Temple was destroyed on Tisha B'Av (9 Av) 3830 in the Hebrew
+/// calendar, corresponding to August 4, 70 CE in the Julian calendar.
 class HebrewDateService {
   /// The Hebrew year of the destruction of the Second Temple.
-  static const int churbanYear = 3828;
+  static const int churbanYear = 3830;
 
   /// Month of Av in the Hebrew calendar.
   static const int monthAv = JewishDate.AV;
 
   /// Day of Tisha B'Av.
   static const int dayTishaBAv = 9;
+
+  /// Days taken off the total count, so that 21 Cheshvan 5787 shows 714,502.
+  ///
+  /// Years and months are not affected and stay anchored to 9 Av.
+  static const int totalDaysAdjustment = 3;
+
+  /// Number of days covered by [getUpcomingDays], starting from today.
+  ///
+  /// The widgets keep advancing for this long without the app being opened.
+  static const int upcomingDaysCount = 731;
 
   /// Returns today's Jewish date.
   static JewishDate getToday() {
@@ -26,7 +38,7 @@ class HebrewDateService {
     return cal;
   }
 
-  /// Returns the JewishDate for the Churban (9 Av 3828).
+  /// Returns the JewishDate for the Churban (9 Av 3830).
   static JewishDate getChurbanDate() {
     final date = JewishDate();
     date.setJewishDate(churbanYear, monthAv, dayTishaBAv);
@@ -36,57 +48,59 @@ class HebrewDateService {
   /// Calculates the total number of days since the Churban.
   ///
   /// Uses the absolute date (Julian Day Number) difference between
-  /// 9 Av 3828 and today.
-  static int daysSinceChurban() {
+  /// 9 Av 3830 and [date], which defaults to today, less [totalDaysAdjustment].
+  static int daysSinceChurban([JewishDate? date]) {
     final churbanDate = getChurbanDate();
-    final today = getToday();
+    final today = date ?? getToday();
     final diff = today.getAbsDate() - churbanDate.getAbsDate();
-    return diff;
+    return diff - totalDaysAdjustment;
   }
 
   /// Calculates years, months, and days since the Churban.
-  static ChurbanDuration durationSinceChurban() {
-    final today = getToday();
-    final currentYear = today.getJewishYear();
+  ///
+  /// Counts whole Hebrew years up to the last 9 Av, then whole Hebrew months
+  /// from there, so every 9 Av is an exact anniversary.
+  static ChurbanDuration durationSinceChurban([JewishDate? date]) {
+    final today = date ?? getToday();
+    final todayAbs = today.getAbsDate();
     final currentMonth = today.getJewishMonth();
-    final currentDay = today.getJewishDayOfMonth();
 
-    int years = currentYear - churbanYear;
-    int months = currentMonth - monthAv;
-    int days = currentDay - dayTishaBAv;
+    // The Hebrew year turns over at Tishrei, so 9 Av has passed in the current
+    // Hebrew year only between 9 Av and the end of Elul.
+    final passedAvThisYear = currentMonth == JewishDate.ELUL ||
+        (currentMonth == monthAv && today.getJewishDayOfMonth() >= dayTishaBAv);
+    final lastAvYear = today.getJewishYear() - (passedAvThisYear ? 0 : 1);
 
-    if (days < 0) {
-      months -= 1;
-      // Get days in previous month by creating a JewishDate for that month
-      final prevMonthDate = JewishDate();
-      int prevMonth = currentMonth > 1 ? currentMonth - 1 : 13;
-      int prevYear = currentMonth > 1 ? currentYear : currentYear - 1;
-      prevMonthDate.setJewishDate(prevYear, prevMonth, 1);
-      days += prevMonthDate.getDaysInJewishMonth();
-    }
-
-    if (months < 0) {
-      years -= 1;
-      // Check if current year is a leap year (has 13 months)
-      final yearDate = JewishDate();
-      yearDate.setJewishDate(currentYear, 1, 1);
-      months += yearDate.isJewishLeapYear() ? 13 : 12;
+    final cursor = JewishDate()
+      ..setJewishDate(lastAvYear, monthAv, dayTishaBAv);
+    int months = 0;
+    int lastMonthAbs = cursor.getAbsDate();
+    while (true) {
+      cursor.forward(Calendar.MONTH, 1);
+      if (cursor.getAbsDate() > todayAbs) break;
+      months += 1;
+      lastMonthAbs = cursor.getAbsDate();
     }
 
     return ChurbanDuration(
-      totalDays: daysSinceChurban(),
-      years: years,
+      totalDays: daysSinceChurban(today),
+      years: lastAvYear - churbanYear,
       months: months,
-      days: days,
+      days: todayAbs - lastMonthAbs,
     );
+  }
+
+  /// Returns the Hebrew-formatted date string for [date].
+  static String formatHebrewDate(JewishDate date) {
+    final formatter = HebrewDateFormatter()
+      ..hebrewFormat = true
+      ..useGershGershayim = true;
+    return formatter.format(date);
   }
 
   /// Returns the Hebrew-formatted date string for today.
   static String getTodayHebrewFormatted() {
-    final formatter = HebrewDateFormatter()
-      ..hebrewFormat = true
-      ..useGershGershayim = true;
-    return formatter.format(getToday());
+    return formatHebrewDate(getToday());
   }
 
   /// Returns the Gregorian-formatted date string for today.
@@ -103,11 +117,15 @@ class HebrewDateService {
     return formatter.formatHebrewNumber(getToday().getJewishYear());
   }
 
+  /// Checks if [date] is Tisha B'Av.
+  static bool isTishaBAv(JewishDate date) {
+    return date.getJewishMonth() == monthAv &&
+        date.getJewishDayOfMonth() == dayTishaBAv;
+  }
+
   /// Checks if today is Tisha B'Av.
   static bool isTodayTishaBAv() {
-    final today = getToday();
-    return today.getJewishMonth() == monthAv &&
-        today.getJewishDayOfMonth() == dayTishaBAv;
+    return isTishaBAv(getToday());
   }
 
   /// Checks if we are currently in the Three Weeks
@@ -131,21 +149,66 @@ class HebrewDateService {
 
   /// Returns formatted data for the home widget.
   static Map<String, String> getWidgetData() {
-    final duration = durationSinceChurban();
-    final totalDays = duration.totalDays;
+    final today = getToday();
+    final duration = durationSinceChurban(today);
 
     return {
-      'total_days': _formatNumber(totalDays),
-      'total_days_raw': totalDays.toString(),
+      ..._widgetDay(today),
+      'total_days_raw': duration.totalDays.toString(),
       'years': duration.years.toString(),
       'months': duration.months.toString(),
       'days': duration.days.toString(),
-      'hebrew_date': getTodayHebrewFormatted(),
       'gregorian_date': getTodayGregorianFormatted(),
-      'is_tisha_bav': isTodayTishaBAv().toString(),
       'is_three_weeks': isInThreeWeeks().toString(),
       'is_nine_days': isInNineDays().toString(),
+      'upcoming_days': jsonEncode(getUpcomingDays()),
     };
+  }
+
+  /// Returns what the widgets show on each of the next [upcomingDaysCount]
+  /// days, starting from [from], which defaults to today.
+  ///
+  /// Keyed by Gregorian date (yyyy-MM-dd), since the date here turns over at
+  /// midnight rather than at nightfall, like [getToday]. The native widgets
+  /// can't run this code, so they look up the current date here instead.
+  static Map<String, Map<String, String>> getUpcomingDays([DateTime? from]) {
+    final start = from ?? DateTime.now();
+    final days = <String, Map<String, String>>{};
+
+    for (var i = 0; i < upcomingDaysCount; i++) {
+      // UTC so that daylight saving can't skip or repeat a date.
+      final day = DateTime.utc(start.year, start.month, start.day + i);
+      days[day.toIso8601String().substring(0, 10)] =
+          _widgetDay(JewishDate.fromDateTime(day));
+    }
+
+    return days;
+  }
+
+  /// Returns the values that change from day to day in the widgets.
+  static Map<String, String> _widgetDay(JewishDate date) {
+    final duration = durationSinceChurban(date);
+
+    return {
+      'total_days': _formatNumber(duration.totalDays),
+      'years_months': formatYearsAndMonths(duration),
+      'hebrew_date': formatHebrewDate(date),
+      'is_tisha_bav': isTishaBAv(date).toString(),
+    };
+  }
+
+  /// Formats years and months in Hebrew, e.g. "1,956 שנים ו-3 חודשים".
+  ///
+  /// Starts with a right-to-left mark so the leading number stays on the right
+  /// on devices set to a left-to-right language.
+  static String formatYearsAndMonths(ChurbanDuration duration) {
+    final months = switch (duration.months) {
+      0 => '',
+      1 => ' וחודש',
+      2 => ' וחודשיים',
+      final count => ' ו-$count חודשים',
+    };
+    return '‏${_formatNumber(duration.years)} שנים$months';
   }
 
   /// Formats a large number with comma separators.
