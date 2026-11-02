@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required in release builds: google_fonts downloads its fonts at runtime. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="churban_counter"
         android:name="${applicationName}"
