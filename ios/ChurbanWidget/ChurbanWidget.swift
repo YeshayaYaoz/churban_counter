@@ -109,33 +109,38 @@ struct ChurbanWidgetEntryView: View {
     private var content: some View {
         switch widgetFamily {
         case .accessoryCircular:
-            // עיצוב עגול
-            VStack(spacing: 0) {
+            // עיצוב עגול: the number uses the full width of the circle
+            VStack(spacing: -1) {
                 Text(entry.totalDays)
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.6)
+                    .minimumScaleFactor(0.5)
                     .widgetAccentable()
                 Text("ימים")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .semibold))
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 1)
 
         case .accessoryRectangular:
-            // עיצוב מלבני
-            VStack(alignment: .leading, spacing: 0) {
-                Text("\u{200F}\(entry.totalDays) ימים")
-                    .font(.system(size: 16, weight: .bold))
-                    .widgetAccentable()
+            // עיצוב מלבני: a large number, then the years and the caption
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(entry.totalDays)
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .widgetAccentable()
+                    Text("ימים")
+                        .font(.system(size: 15, weight: .semibold))
+                }
                 if !entry.yearsMonths.isEmpty {
                     Text(entry.yearsMonths)
-                        .font(.system(size: 13))
+                        .font(.system(size: 14, weight: .medium))
                 }
                 Text(caption)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
             }
             .lineLimit(1)
-            .minimumScaleFactor(0.7)
+            .minimumScaleFactor(0.75)
             .frame(maxWidth: .infinity, alignment: .leading)
 
         case .accessoryInline:
