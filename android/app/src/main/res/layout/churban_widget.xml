@@ -1,58 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
-    android:padding="16dp">
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingTop="10dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="12dp">
 
-    <!-- Title -->
+    <!-- Tisha B'Av title, hidden on other days -->
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="8dp"
-        android:text="זכר לחורבן"
-        android:textColor="#D4A84B"
-        android:textSize="14sp"
-        android:fontFamily="sans-serif-medium" />
+        android:text="ט׳ באב"
+        android:textColor="#E05555"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif-medium"
+        android:visibility="gone" />
 
     <!-- Day Count - Main Number -->
     <TextView
         android:id="@+id/tv_day_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_title"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="4dp"
-        android:text="714,340"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:text="714,502"
         android:textColor="#FFFFFF"
-        android:textSize="36sp"
-        android:fontFamily="sans-serif-bold" />
+        android:textSize="38sp"
+        android:textStyle="bold" />
 
     <!-- "Days" label -->
     <TextView
         android:id="@+id/tv_days_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_day_count"
-        android:layout_centerHorizontal="true"
+        android:layout_marginTop="2dp"
+        android:fontFamily="sans-serif-medium"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.15"
         android:text="ימים"
         android:textColor="#D4A84B"
-        android:textSize="12sp"
-        android:fontFamily="sans-serif"
-        android:letterSpacing="0.15" />
+        android:textSize="12sp" />
 
-    <!-- Hebrew Date -->
+    <!-- Divider -->
+    <FrameLayout
+        android:id="@+id/divider"
+        android:layout_width="48dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:background="#55D4A84B" />
+
+    <!-- Years and months -->
+    <TextView
+        android:id="@+id/tv_years_months"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:text="1,956 שנים ו-3 חודשים"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp" />
+
+    <!-- Caption -->
+    <TextView
+        android:id="@+id/tv_caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="sans-serif-medium"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:text="לחורבן בית המקדש"
+        android:textColor="#D4A84B"
+        android:textSize="13sp" />
+
+    <!-- Hebrew Date, only when the widget is tall enough -->
     <TextView
         android:id="@+id/tv_hebrew_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
-        android:textColor="#FFFFFF99"
+        android:layout_marginTop="6dp"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="#99FFFFFF"
         android:textSize="11sp"
-        android:fontFamily="sans-serif" />
+        android:visibility="gone" />
 
-</RelativeLayout>
+</LinearLayout>

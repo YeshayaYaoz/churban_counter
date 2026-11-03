@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.churban_counter"
-    compileSdk = 34
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -14,13 +14,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-
     defaultConfig {
         applicationId = "com.arielapps.churban_counter"
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = 34  // Hardcode this to 34 or 35
         versionCode = 1
         versionName = "1.0"
@@ -32,6 +28,12 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
 }
 

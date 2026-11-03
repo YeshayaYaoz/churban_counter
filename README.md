@@ -1,6 +1,6 @@
 # זכר לחורבן - Zecher LaChurban
 
-מונה ימים מאז חורבן בית המקדש השני (ט׳ באב ג׳תתכ״ח / 70 לספירה).
+מונה ימים מאז חורבן בית המקדש השני (ט׳ באב ג׳תת״ל / 70 לספירה).
 
 A Flutter app with **home screen widget** that counts the number of days since the destruction of the Second Beit HaMikdash.
 
@@ -8,11 +8,11 @@ A Flutter app with **home screen widget** that counts the number of days since t
 
 ## Features
 
-- **Total day count** from 9 Av 3828 to today using the Hebrew calendar (`kosher_dart`)
+- **Total day count** from 9 Av 3830 to today using the Hebrew calendar (`kosher_dart`)
 - **Home screen widget** for Android (AppWidgetProvider) and iOS (WidgetKit)
 - **Bilingual** Hebrew / English toggle
 - **Mourning period awareness**: special UI during the Three Weeks, Nine Days, and Tisha B'Av
-- **Background updates** via WorkManager (daily refresh)
+- **Daily updates** of the widgets at midnight, even while the app is closed
 - **Animated counter** on app launch
 
 ---
@@ -73,6 +73,8 @@ Add inside the `<application>` tag:
     android:exported="true">
     <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="android.intent.action.TIME_SET" />
+        <action android:name="android.intent.action.TIMEZONE_CHANGED" />
     </intent-filter>
     <meta-data
         android:name="android.appwidget.provider"
@@ -80,14 +82,14 @@ Add inside the `<application>` tag:
 </receiver>
 ```
 
-#### b. Add WorkManager initialization
+#### b. Check the minimum SDK
 
-In `android/app/build.gradle`, ensure minSdk is at least 21:
+In `android/app/build.gradle.kts`, keep minSdk at Flutter's minimum:
 
 ```gradle
 android {
     defaultConfig {
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
     }
 }
 ```
@@ -119,11 +121,20 @@ flutter run
 
 The app uses `kosher_dart` (Dart port of KosherJava) to:
 
-1. Create a `JewishDate` for 9 Av 3828 (the date of the Churban)
+1. Create a `JewishDate` for 9 Av 3830 (the date of the Churban)
 2. Create a `JewishDate` for today
 3. Calculate the difference using `getAbsDate()` (Julian Day Number)
 
-The result is the precise number of days between the two Hebrew calendar dates.
+The total is that difference less 3 days (`totalDaysAdjustment`), so that 21 Cheshvan 5787 shows 714,502. Years and months are counted from 9 Av and are not adjusted.
+
+## How the Widgets Update
+
+Dart can't run while the app is closed, so each time the app opens it saves what the widgets show on each of the next two years of days, keyed by Gregorian date (`upcoming_days`). The widgets look up the current date there:
+
+- **Android**: an alarm at midnight redraws the widget, and so does a change to the clock or time zone
+- **iOS**: the WidgetKit timeline has an entry for each coming midnight
+
+Like the app, the widgets turn over at midnight, not at nightfall. If the app stays closed for longer than the saved days cover, the widgets go back to the values from the last time it ran.
 
 ---
 
@@ -131,7 +142,7 @@ The result is the precise number of days between the two Hebrew calendar dates.
 
 - **Colors**: Edit `primaryColor` and `accentColor` in `home_screen.dart`
 - **Widget size**: Adjust `minWidth`/`minHeight` in `churban_widget_info.xml`
-- **Update frequency**: Change `Duration(hours: 12)` in `widget_service.dart`
+- **Days saved ahead**: Change `upcomingDaysCount` in `hebrew_date_service.dart`
 - **Pasuk**: Change the verse displayed at the bottom of `home_screen.dart`
 
 ---
@@ -142,7 +153,6 @@ The result is the precise number of days between the two Hebrew calendar dates.
 |---------|---------|
 | `kosher_dart` | Hebrew calendar calculations |
 | `home_widget` | Cross-platform home screen widget |
-| `workmanager` | Background task scheduling |
 | `shared_preferences` | Persist locale choice |
 | `google_fonts` | Typography (Frank Ruhl Libre, Assistant) |
 

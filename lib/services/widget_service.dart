@@ -1,18 +1,20 @@
 import 'package:home_widget/home_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'hebrew_date_service.dart';
-import 'zmanim_service.dart';
 
 /// Manages home screen widget updates for both Android and iOS.
 ///
-/// Uses home_widget's built-in mechanisms:
-/// - Android: updatePeriodMillis in XML (periodic OS refresh)
-///            + registerBackgroundCallback for interactive updates
-/// - iOS: WidgetKit Timeline refreshes at tzet hakochavim
+/// Dart can't run while the app is closed, so the saved data includes the
+/// upcoming days and each widget looks up the current date in them:
+/// - Android: an alarm at midnight redraws the widget, with updatePeriodMillis
+///            in XML as a backup and registerBackgroundCallback for
+///            interactive updates
+/// - iOS: WidgetKit Timeline has an entry for each coming midnight
 /// - Both: widget data updated every time the app is opened
 class WidgetService {
   static const String appGroupId = 'group.com.arielapps.churbanCounter.ChurbanWidge';
-  static const String androidWidgetName = 'ChurbanWidgetProvider';
+  // Qualified because the provider's package differs from the applicationId.
+  static const String androidWidgetName =
+      'com.example.churban_counter.ChurbanWidgetProvider';
   static const String iOSWidgetName = 'ChurbanWidget';
 
   /// Initialize home widget.
@@ -30,22 +32,6 @@ class WidgetService {
   static Future<void> updateWidget() async {
     final data = HebrewDateService.getWidgetData();
 
-    // Load saved user location for zmanim
-    final prefs = await SharedPreferences.getInstance();
-    final lat = prefs.getDouble('user_latitude') ?? ZmanimService.defaultLatitude;
-    final lng = prefs.getDouble('user_longitude') ?? ZmanimService.defaultLongitude;
-
-    // Add tzet info for iOS Timeline refresh
-    final nextTzet = ZmanimService.getNextTzetHakochavim(
-      latitude: lat,
-      longitude: lng,
-    );
-    data['next_tzet'] = ZmanimService.formatTime(nextTzet);
-
-    if (nextTzet != null) {
-      data['next_tzet_timestamp'] = nextTzet.millisecondsSinceEpoch.toString();
-    }
-
     // Save all data to shared storage
     for (final entry in data.entries) {
       await HomeWidget.saveWidgetData<String>(entry.key, entry.value);
@@ -53,19 +39,9 @@ class WidgetService {
 
     // Trigger native widget UI refresh
     await HomeWidget.updateWidget(
-      androidName: androidWidgetName,
+      qualifiedAndroidName: androidWidgetName,
       iOSName: iOSWidgetName,
     );
-  }
-
-  /// Saves the user's location for accurate zmanim calculations.
-  static Future<void> saveUserLocation(double lat, double lng) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('user_latitude', lat);
-    await prefs.setDouble('user_longitude', lng);
-
-    // Re-update with new location
-    await updateWidget();
   }
 }
 

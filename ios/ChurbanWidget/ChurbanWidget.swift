@@ -4,55 +4,70 @@ import SwiftUI
 struct ChurbanProvider: TimelineProvider {
     let sharedDefaults = UserDefaults(suiteName: "group.com.arielapps.churbanCounter.ChurbanWidge")
 
+    // Days in one timeline. WidgetKit asks for the next ones once they run out.
+    let timelineDays = 30
+
+    let dayFormatter: DateFormatter = {
+        // Fixed calendar and locale, as the device may use a different calendar
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
     func placeholder(in context: Context) -> ChurbanEntry {
-        ChurbanEntry(date: Date(), totalDays: "714,340", hebrewDate: "", nextTzet: "", isTishaBAv: false)
+        ChurbanEntry(date: Date(), totalDays: "714,502", yearsMonths: "1,956 שנים ו-3 חודשים", hebrewDate: "", isTishaBAv: false)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (ChurbanEntry) -> ()) {
-        completion(createEntry())
+        completion(createEntry(for: Date(), upcomingDays: loadUpcomingDays()))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<ChurbanEntry>) -> ()) {
-        let entry = createEntry()
-        let refreshDate = nextTzetDate() ?? fallbackRefreshDate()
-        let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-        completion(timeline)
-    }
-
-    private func createEntry() -> ChurbanEntry {
-        let totalDays = sharedDefaults?.string(forKey: "total_days") ?? "---"
-        let hebrewDate = sharedDefaults?.string(forKey: "hebrew_date") ?? ""
-        let nextTzet = sharedDefaults?.string(forKey: "next_tzet_display") ?? ""
-        let isTishaBAv = sharedDefaults?.string(forKey: "is_tisha_bav") == "true"
-        return ChurbanEntry(date: Date(), totalDays: totalDays, hebrewDate: hebrewDate, nextTzet: nextTzet, isTishaBAv: isTishaBAv)
-    }
-
-    private func nextTzetDate() -> Date? {
-        guard let tsString = sharedDefaults?.string(forKey: "next_tzet_timestamp"),
-              let tsMillis = Double(tsString) else { return nil }
-        let date = Date(timeIntervalSince1970: tsMillis / 1000.0)
-        let now = Date()
-        guard date > now, date < now.addingTimeInterval(48 * 3600) else { return nil }
-        return date
-    }
-
-    private func fallbackRefreshDate() -> Date {
         let calendar = Calendar.current
-        var components = calendar.dateComponents([.year, .month, .day], from: Date())
-        components.hour = 19; components.minute = 30
-        if let tonight = calendar.date(from: components), tonight > Date() { return tonight }
-        let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date())!
-        var tc = calendar.dateComponents([.year, .month, .day], from: tomorrow)
-        tc.hour = 19; tc.minute = 30
-        return calendar.date(from: tc) ?? Date().addingTimeInterval(86400)
+        let today = calendar.startOfDay(for: Date())
+        let upcomingDays = loadUpcomingDays()
+
+        var entries: [ChurbanEntry] = []
+        for offset in 0..<timelineDays {
+            guard let date = calendar.date(byAdding: .day, value: offset, to: today) else { break }
+            entries.append(createEntry(for: date, upcomingDays: upcomingDays))
+        }
+
+        completion(Timeline(entries: entries, policy: .atEnd))
+    }
+
+    private func loadUpcomingDays() -> [String: [String: String]] {
+        guard let json = sharedDefaults?.string(forKey: "upcoming_days"),
+              let data = json.data(using: .utf8),
+              let days = try? JSONDecoder().decode([String: [String: String]].self, from: data) else { return [:] }
+        return days
+    }
+
+    private func createEntry(for date: Date, upcomingDays: [String: [String: String]]) -> ChurbanEntry {
+        let day = upcomingDays[dayFormatter.string(from: date)]
+
+        // Past the end of the upcoming days, stay on what the app last saved
+        func value(_ key: String) -> String? {
+            day?[key] ?? sharedDefaults?.string(forKey: key)
+        }
+
+        return ChurbanEntry(
+            date: date,
+            totalDays: value("total_days") ?? "---",
+            yearsMonths: value("years_months") ?? "",
+            hebrewDate: value("hebrew_date") ?? "",
+            isTishaBAv: value("is_tisha_bav") == "true"
+        )
     }
 }
 
 struct ChurbanEntry: TimelineEntry {
     let date: Date
     let totalDays: String
+    let yearsMonths: String
     let hebrewDate: String
-    let nextTzet: String
     let isTishaBAv: Bool
 }
 
@@ -60,73 +75,150 @@ struct ChurbanWidgetEntryView: View {
     var entry: ChurbanProvider.Entry
     @Environment(\.widgetFamily) var widgetFamily
 
+    private let caption = "לחורבן בית המקדש"
+
     private var accentColor: Color {
         entry.isTishaBAv ? .red : Color(red: 0.83, green: 0.66, blue: 0.29)
     }
 
     var body: some View {
+        content
+            .environment(\.layoutDirection, .rightToLeft)
+            .containerBackground(for: .widget) {
+                widgetBackground
+            }
+    }
+
+    @ViewBuilder
+    private var widgetBackground: some View {
         switch widgetFamily {
         case .accessoryCircular:
-            // עיצוב עגול
-            Text(entry.totalDays)
-                .font(.system(size: 20, weight: .bold))
+            AccessoryWidgetBackground()
+        case .accessoryRectangular, .accessoryInline:
+            Color.clear
+        default:
+            LinearGradient(
+                colors: [Color(red: 0.11, green: 0.23, blue: 0.29), Color(red: 0.04, green: 0.04, blue: 0.04)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch widgetFamily {
+        case .accessoryCircular:
+            // עיצוב עגול: the number uses the full width of the circle
+            VStack(spacing: -1) {
+                Text(entry.totalDays)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                    .widgetAccentable()
+                Text("ימים")
+                    .font(.system(size: 12, weight: .semibold))
+            }
+            .padding(.horizontal, 1)
 
         case .accessoryRectangular:
-            // עיצוב מלבני
-            VStack(alignment: .leading) {
-                Text("זכר לחורבן")
-                Text(entry.totalDays)
+            // עיצוב מלבני: a large number, then the years and the caption
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(entry.totalDays)
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .widgetAccentable()
+                    Text("ימים")
+                        .font(.system(size: 15, weight: .semibold))
+                }
+                if !entry.yearsMonths.isEmpty {
+                    Text(entry.yearsMonths)
+                        .font(.system(size: 14, weight: .medium))
+                }
+                Text(caption)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
             }
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
         case .accessoryInline:
             // שורה אחת
-            Text("זכר לחורבן: \(entry.totalDays) ימים")
+            ViewThatFits {
+                Text("\u{200F}\(entry.totalDays) ימים לחורבן בית המקדש")
+                Text("\u{200F}\(entry.totalDays) ימים לחורבן")
+            }
+
+        case .systemMedium:
+            // Home Screen - medium
+            HStack(spacing: 14) {
+                dayCounter(size: 40)
+                    .frame(maxWidth: .infinity)
+
+                Rectangle()
+                    .fill(accentColor.opacity(0.3))
+                    .frame(width: 1)
+                    .padding(.vertical, 14)
+
+                VStack(spacing: 5) {
+                    durationLines(size: 15)
+                    Text(entry.hebrewDate)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .lineLimit(1)
+                        .padding(.top, 3)
+                }
+                .frame(maxWidth: .infinity)
+            }
 
         default:
-            // Home Screen
-            ZStack {
-                LinearGradient(
-                    colors: [Color(red: 0.11, green: 0.23, blue: 0.29), Color(red: 0.04, green: 0.04, blue: 0.04)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-
-                VStack(spacing: 4) {
-                    Text(entry.isTishaBAv ? "ט׳ באב" : "זכר לחורבן")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(accentColor)
-
-                    Text(entry.totalDays)
-                        .font(.system(size: widgetFamily == .systemSmall ? 28 : 36, weight: .bold))
-                        .foregroundColor(.white)
-                        .minimumScaleFactor(0.5)
-
-                    Text("ימים")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(accentColor.opacity(0.8))
-                        .tracking(2)
-
-                    if widgetFamily != .systemSmall {
-                        Spacer()
-                        HStack(spacing: 12) {
-                            Text(entry.hebrewDate)
-                                .font(.system(size: 11))
-                                .foregroundColor(.white.opacity(0.5))
-
-                            if !entry.nextTzet.isEmpty {
-                                HStack(spacing: 3) {
-                                    Image(systemName: "moon.stars.fill").font(.system(size: 9))
-                                    Text(entry.nextTzet).font(.system(size: 10))
-                                }.foregroundColor(accentColor.opacity(0.5))
-                            }
-                        }
-                        .padding(.bottom, 8)
-                    }
+            // Home Screen - small
+            VStack(spacing: 8) {
+                dayCounter(size: 34)
+                Rectangle()
+                    .fill(accentColor.opacity(0.3))
+                    .frame(width: 40, height: 1)
+                VStack(spacing: 3) {
+                    durationLines(size: 13)
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 12)
             }
         }
+    }
+
+    private func dayCounter(size: CGFloat) -> some View {
+        VStack(spacing: 1) {
+            if entry.isTishaBAv {
+                Text("ט׳ באב")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(accentColor)
+            }
+            Text(entry.totalDays)
+                .font(.system(size: size, weight: .bold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            Text("ימים")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(accentColor)
+                .tracking(2)
+        }
+    }
+
+    @ViewBuilder
+    private func durationLines(size: CGFloat) -> some View {
+        if !entry.yearsMonths.isEmpty {
+            Text(entry.yearsMonths)
+                .font(.system(size: size, weight: .medium))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        Text(caption)
+            .font(.system(size: size, weight: .medium))
+            .foregroundStyle(accentColor)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
     }
 }
 @main
